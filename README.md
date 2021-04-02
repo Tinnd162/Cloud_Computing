@@ -1,5 +1,5 @@
 # Đề tài môn: ĐIỆN TOÁN ĐÁM MÂY
-## Tên đề tài: Viết ứng dụng kết hợp nhiều docker với nhau.
+## Tên đề tài: Xây dựng ứng dụng kết hợp nhiều docker với nhau.
 ### GVHD: Huỳnh Xuân Phụng
 ### Nhóm SVTH:
   - Phạm Ngọc Hùng - 18133017
