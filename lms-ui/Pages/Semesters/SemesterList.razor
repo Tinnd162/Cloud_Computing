@@ -1,0 +1,142 @@
+@page "/semesters"
+@using lms_ui.Models
+@inject IHttpClientFactory _clientFacotry
+@inject NavigationManager Navigation
+@using MatBlazor
+@inject HttpClient Http
+@using System;
+@using System.Text;
+
+<MatDialog @bind-IsOpen="@dialogIsOpen">
+    <MatDialogTitle>Thông tin học phần</MatDialogTitle>
+    <MatDialogContent>
+    </MatDialogContent>
+        <div class="table-responsive">
+            <table class="table table-bordered" width="100%">
+                <thead>
+                    <tr>
+                        <th>Học kỳ</th>
+                        <th>Mô tả</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var course in lstCourses)
+                    {
+                        <tr>
+                            <td>@course.name</td>
+                            <td>@course.description</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    <MatDialogActions>
+        <MatButton OnClick="@OkClick">OK</MatButton>
+    </MatDialogActions>
+</MatDialog>
+<div class="row">
+    <br>
+    <div class="col-lg-4 col-md-6 col-sm-12">
+        <h3>Thêm thông tin học kỳ</h3>
+        <br>
+        <input type="text" @bind-value="newSem.title" class="form-control mb-3" placeholder="Tên học kỳ" />
+        <input type="date" @bind-value="newSem.startsem" class="form-control mb-3"/>
+        <input type="date" @bind-value="newSem.endsem" class="form-control mb-3"/>
+        <button class="btn btn-block btn-primary" @onclick="submitSemester">Lưu</button>
+    </div>
+    <div class="col-lg-8 col-md-6 col-sm-12">
+        @if (lstSemesters == null)
+        {
+            <p><em>Loading...</em></p>
+        }
+        else
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Học kỳ</th>
+                        <th>Ngày bắt đầu</th>
+                        <th>Ngày kết thúc</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var semester in lstSemesters)
+                    {
+                        <tr>
+                            <td>@semester.title</td>
+                            <td>@semester.startsem.ToString("MM/dd/yyyy")</td>
+                            <td>@semester.endsem.ToString("MM/dd/yyyy")</td>
+                            <td>
+                                <button @onclick="@(()=>editSemester(@semester.id))" class="btn btn-primary">Sửa</button>
+                                <button @onclick="@(() => deleteSemester(@semester.id))" class="btn btn-danger">Xóa</button>
+                                <button @onclick="@(() => detailSemester(@semester.id))" class="btn btn-success">Chi tiết</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+</div>
+
+@code {
+    bool dialogIsOpen = false;
+
+    void OkClick()
+    {
+        dialogIsOpen = false;
+    }
+    private List<Semesters> lstSemesters = new List<Semesters>();
+    private List<Courses> lstCourses=new List<Courses>();
+    private Semesters newSem = new Semesters();
+    private bool edit = false;
+    protected override async Task OnInitializedAsync()
+    {
+        var httpClient = _clientFacotry.CreateClient("JsonPlaceHolderClient");
+        lstSemesters = await httpClient.GetFromJsonAsync<List<Semesters>>("/semesters");
+    }
+    private async Task editSemester(string id)
+    {
+        var httpClient = _clientFacotry.CreateClient("JsonPlaceHolderClient");
+        newSem = await httpClient.GetFromJsonAsync<Semesters>("/semesters/" + id);
+        edit = true;
+    }
+    private async Task deleteSemester(string id)
+    {
+        var httpClient = _clientFacotry.CreateClient("JsonPlaceHolderClient");
+        await httpClient.DeleteAsync("/semesters/delete/" + id);
+        await OnInitializedAsync();
+    }
+    private async Task detailSemester(string id)
+    {
+        dialogIsOpen = true;
+        var httpClient = _clientFacotry.CreateClient("JsonPlaceHolderClient");
+        lstCourses = await httpClient.GetFromJsonAsync<List<Courses>>("/semesters/detail/" + id);
+    }
+    public string createID(string code)
+    {
+        var builder = new StringBuilder();
+        builder.Append(code + DateTime.Now.ToString("yyyyMMddHHmmssff"));
+        return builder.ToString();
+    }
+    private async Task submitSemester()
+    {
+        if (edit == false)
+        {
+            newSem.id = createID("SEM");
+            var httpClient = _clientFacotry.CreateClient("JsonPlaceHolderClient");
+            await httpClient.PostAsJsonAsync<Semesters>("/semesters/create/", newSem);
+            await OnInitializedAsync();
+            newSem = new Semesters();
+        }
+        else
+        {
+            var httpClient = _clientFacotry.CreateClient("JsonPlaceHolderClient");
+            await httpClient.PutAsJsonAsync<Semesters>("/semesters/update/" + newSem.id, newSem);
+            await OnInitializedAsync();
+            edit = false;
+            newSem = new Semesters();
+        }
+    }
+}

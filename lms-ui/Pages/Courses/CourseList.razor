@@ -1,0 +1,95 @@
+@page "/courses"
+@using lms_ui.Models
+@inject IHttpClientFactory _clientFacotry
+@inject NavigationManager Navigation
+@using MatBlazor
+
+
+<MatDialog @bind-IsOpen="@dialogIsOpen">
+    <MatDialogTitle>Thông tin học phần</MatDialogTitle>
+    <MatDialogContent>
+    </MatDialogContent>
+        <div class="table-responsive">
+            <table class="table table-bordered" width="100%">
+                <thead>
+                    <tr>
+                        <th>Họ và tên</th>
+                        <th>Mail</th>
+                        <th>Chuyên ngành</th>
+                        <th>Khoa</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var student in lstStudents)
+                    {
+                        <tr>
+                            <td>@student.last_name @student.middle_name @student.first_name</td>
+                            <td>@student.mail</td>
+                            <td>@student.major</td>
+                            <td>@student.name</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    <MatDialogActions>
+        <MatButton OnClick="@OkClick">OK</MatButton>
+    </MatDialogActions>
+</MatDialog>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Học phần</th>
+            <th>Học Kỳ</th>
+            <th>Khoa</th>
+            <th>Ngày bắt đầu</th>
+            <th>Ngày kết thúc</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var course in lstCourses)
+        {
+            <tr>
+                <td>@course.name</td>
+                <td>@course.semester.title</td>
+                <td>@course.subject.faculties.name</td>
+                <td>@course.semester.startsem.ToString("MM/dd/yyyy")</td>
+                <td>@course.semester.endsem.ToString("MM/dd/yyyy")</td>
+                <td>
+                    <button @onclick="@(() => deleteCourse(@course.id))" class="btn btn-danger">Xóa</button>
+                    <button @onclick="@(() => detailCourse(@course.id))" class="btn btn-success">Chi tiết</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@code {
+    bool dialogIsOpen = false;
+
+    private List<Courses> lstCourses = new List<Courses>();
+    private List<MixStudent> lstStudents = new List<MixStudent>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        var httpClient = _clientFacotry.CreateClient("JsonPlaceHolderClient");
+        lstCourses = await httpClient.GetFromJsonAsync<List<Courses>>("/courses");
+    }
+    private async Task deleteCourse(string id)
+    {
+        var httpClient = _clientFacotry.CreateClient("JsonPlaceHolderClient");
+        await httpClient.DeleteAsync("/courses/delete/" + id);
+        await OnInitializedAsync();
+    }
+    void OkClick()
+    {
+        dialogIsOpen = false;
+    }
+    private async Task detailCourse(string id)
+    {
+        dialogIsOpen = true;
+        var httpClient = _clientFacotry.CreateClient("JsonPlaceHolderClient");
+        lstStudents = await httpClient.GetFromJsonAsync<List<MixStudent>>("/courses/detail/" + id); 
+    }
+}

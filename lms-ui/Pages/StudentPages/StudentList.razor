@@ -1,0 +1,149 @@
+@page "/students"
+@using lms_ui.Models
+@inject IHttpClientFactory _clientFacotry
+
+<div class="row" style="padding-top:10px">  
+        <div class="col-md-3">  
+            <select class="form-control" @bind="@faculty_id" @onclick="@(() => major(@faculty_id))">  
+                <option value="">-- Khoa --</option>  
+                @foreach (var lstFaculty in lstFaculties)  
+                {  
+                    <option value="@lstFaculty.id">@lstFaculty.name</option>  
+                }  
+            </select>  
+        </div>  
+        <div class="col-md-3">  
+            <select class="form-control" @bind="@major_id">  
+                <option value="" style="text-align:center">-- Chuyên ngành --</option>  
+                @if (lstClasses != null)  
+                {  
+                    @foreach (var major in lstClasses)  
+                    {  
+                        <option value="@major.id">@major.major</option>  
+                    }  
+                }  
+            </select>  
+        </div>
+        <button @onclick="@(() => search(@faculty_id,@major_id ))" class="btn btn-success">Tìm kiếm</button>
+    </div>  
+
+<MatDialog @bind-IsOpen="@dialogIsOpen">
+    <MatDialogTitle>Thông tin sinh viên</MatDialogTitle>
+    <MatDialogContent>
+    </MatDialogContent>
+    <div class="table-responsive">
+        <table class="table table-bordered" width="100%">
+            <thead>
+                <tr>
+                    <th>Tên học phần</th>
+                    <th>Học kỳ</th>
+                    <th>Thời gian bắt đầu</th>
+                    <th>Thời gian kết thúc</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var course in lstCourses)
+                {
+                    <tr>
+                        <td>@course.name</td>
+                        <td>@course.title</td>
+                        <td>@course.start_sem.ToString("MM/dd/yyyy")</td>
+                        <td>@course.end_sem.ToString("MM/dd/yyyy")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+    <MatDialogActions>
+        <MatButton OnClick="@OkClick">OK</MatButton>
+    </MatDialogActions>
+</MatDialog>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Họ và tên</th>
+            <th>Lớp</th>
+            <th>Ngày sinh</th>
+            <th>Số điện thoại</th>
+            <th>Email</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var student in lstStudents)
+        {
+            <tr>
+                <td>@student.lastname @student.middlename @student.firstname</td>
+                <td>@student.classes.name</td>
+                <td>@student.dob.ToString("MM/dd/yyyy")</td>
+                <td>@student.phone</td>
+                <td>@student.mail</td>
+                <td>
+                    <button @onclick="@(() => deleteStudent(@student.id))" class="btn btn-danger">Xóa</button>
+                    <button @onclick="@(() => detailStudent(@student.id))" class="btn btn-primary">Chi tiết</button>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+@code {
+    string faculty_id;
+    string major_id;
+    bool dialogIsOpen = false;
+    void OkClick()
+    {
+        dialogIsOpen = false;
+    }
+    private List<Students> lstStudents = new List<Students>();
+    private List<Faculties> lstFaculties = new List<Faculties>();
+    private List<Classes> lstClasses = new List<Classes>();
+    private List<MixCourse> lstCourses = new List<MixCourse>();
+
+    private Students students = new Students();
+    protected override async Task OnInitializedAsync()
+    {
+        var httpClient = _clientFacotry.CreateClient("JsonPlaceHolderClient");
+        lstStudents = await httpClient.GetFromJsonAsync<List<Students>>("/users");
+        lstFaculties = await httpClient.GetFromJsonAsync<List<Faculties>>("/faculties");
+        @* lstClasses = await httpClient.GetFromJsonAsync<List<Classes>>("/classes"); *@
+    }
+    private async Task deleteStudent(string id)
+    {
+        var httpClient = _clientFacotry.CreateClient("JsonPlaceHolderClient");
+        await httpClient.DeleteAsync("/users/delete/" + id);
+        await OnInitializedAsync();
+    }
+
+    private async Task search(string faculty_id, string major_id)
+    {
+        if (faculty_id != null && major_id != null)
+        {
+            var httpClient = _clientFacotry.CreateClient("JsonPlaceHolderClient");
+            lstStudents = await httpClient.GetFromJsonAsync<List<Students>>("/users/" + faculty_id + "/" +
+            major_id);
+        }
+        else if (faculty_id != null && major_id == null)
+        {
+            var httpClient = _clientFacotry.CreateClient("JsonPlaceHolderClient");
+            lstStudents = await httpClient.GetFromJsonAsync<List<Students>>("/users/getbyFaculty/" + faculty_id);
+        }
+        else
+        {
+            var httpClient = _clientFacotry.CreateClient("JsonPlaceHolderClient");
+            lstStudents = await httpClient.GetFromJsonAsync<List<Students>>("/users");
+        }
+    }
+    private async Task detailStudent(string id)
+    {
+        dialogIsOpen = true;
+        var httpClient = _clientFacotry.CreateClient("JsonPlaceHolderClient");
+        lstCourses = await httpClient.GetFromJsonAsync<List<MixCourse>>("/users/detail/" + id);
+    }
+    private async Task major(string id)
+    {
+        lstClasses.Clear();
+        var httpClient = _clientFacotry.CreateClient("JsonPlaceHolderClient");
+        lstClasses = await httpClient.GetFromJsonAsync<List<Classes>>("/classes/" + id);
+    }
+}
