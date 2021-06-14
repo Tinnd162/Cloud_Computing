@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+
+  lms-app:
+    container_name: lms-app
+    build:
+      context: ./lms-app
+    ports:
+      - "8080:8080"
+    depends_on: 
+      - db
+    networks:
+    - backend
+    - frontend
+
+  db:
+    image: mysql:8.0.25
+    container_name: lms-db
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./lms-db/lms.sql:/docker-entrypoint-initdb.d/init.sql
+    environment:
+      - MYSQL_DATABASE=lms
+      - MYSQL_USER=tinnd
+      - MYSQL_PASSWORD=concho123
+      - MYSQL_ROOT_PASSWORD=concho123
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    networks:
+      - backend  
+
+  lms_ui:
+    container_name: lms-ui
+    build: 
+      context: ./lms-ui
+    ports:
+      - "5000:5000"
+    depends_on:
+      - lms-app
+    networks:
+      - frontend
+
+volumes:
+  db-data:
+
+networks:
+  backend:
+  frontend:  
