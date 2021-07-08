@@ -215,14 +215,14 @@ CREATE TABLE `course`(
 )ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 INSERT INTO `course`(`id`,`name`,`description`,`semester_id`,`subject_id`) VALUES
-('MATH132501_20211_1', 'Toan 2', NULL, '20211', 'MATH132501'),
-('MATH143001_20211_1', 'Dai so va cau truc dai so', NULL, '20211', 'MATH143001'),
-('INSE330380_20211_1', 'An toan thong tin', NULL, '20211', 'INSE330380'),
-('WEPR330479_20211_1', 'Lap trinh Web', NULL, '20211', 'WEPR330479'),
-('SOEN330679_20211_1', 'Cong nghe phan mem', NULL, '20211', 'SOEN330679'),
-('DBSY230184_20211_1', 'Co so du lieu', NULL, '20211', 'DBSY230184'),
-('INPR130285_20211_1', 'Nhap mon lap trinh', NULL, '20211', 'INPR130285'),
-('EEEN234162_20211_1', 'Dien tu can ban', NULL, '20211', 'EEEN234162');
+('MATH132501_20211_1', 'Toan 2', 'Can dat du cac tieu chi mon hoc', '20211', 'MATH132501'),
+('MATH143001_20211_1', 'Dai so va cau truc dai so', 'Can dat du cac tieu chi mon hoc', '20211', 'MATH143001'),
+('INSE330380_20211_1', 'An toan thong tin', 'Can dat du cac tieu chi mon hoc', '20211', 'INSE330380'),
+('WEPR330479_20211_1', 'Lap trinh Web', 'Can dat du cac tieu chi mon hoc', '20211', 'WEPR330479'),
+('SOEN330679_20211_1', 'Cong nghe phan mem', 'Can dat du cac tieu chi mon hoc', '20211', 'SOEN330679'),
+('DBSY230184_20211_1', 'Co so du lieu', 'Can dat du cac tieu chi mon hoc', '20211', 'DBSY230184'),
+('INPR130285_20211_1', 'Nhap mon lap trinh', 'Can dat du cac tieu chi mon hoc', '20211', 'INPR130285'),
+('EEEN234162_20211_1', 'Dien tu can ban', 'Can dat du cac tieu chi mon hoc', '20211', 'EEEN234162');
 
 
 CREATE TABLE `learns`(
